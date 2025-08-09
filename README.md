@@ -68,3 +68,19 @@ dihter samples/tro.jpg -a floyd -o out.json --preview preview.png
 dihter samples/tro.jpg -a floyd --compare compare.png
 ```
 
+### Samples
+
+Original and dithered examples from `samples/`:
+
+- Original `tro.jpg`:
+
+  ![tro.jpg](samples/tro.jpg)
+
+- Base colors dither (main palette):
+
+  ![tro-output-basecolors.jpg](samples/tro-output-basecolors.jpg)
+
+- All colors dither (main + premium):
+
+  ![tro-output-allcolors.jpg](samples/tro-output-allcolors.jpg)
+
