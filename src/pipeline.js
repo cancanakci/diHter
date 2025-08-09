@@ -40,7 +40,7 @@ function ditherImage({ width, height, rgba, palette, algorithm, gamma, strength,
     default:
       throw new Error(`Unknown algorithm: ${algorithm}`);
   }
-  return indices2D;
+  return { indices2D, quantizedRGBA: working };
 }
 
 module.exports = { ditherImage };

@@ -29,6 +29,8 @@ dihter <input> [options]
 - `--palette <json>` palette array; each entry `[r,g,b]` or `{r,g,b}`; `id` defaults to index
 - `--palette-mode <mode>` `main|premium|all|owned` (default: `main` unless `--palette` given)
 - `--owned-ids <csv>` when `--palette-mode owned`, comma-separated list of integer color IDs to include
+ - `--preview <png>` write a PNG of the dithered image
+ - `--compare <png>` write a side-by-side PNG: original | dithered
 
 ### Palette
 
@@ -55,4 +57,14 @@ dihter input.png --palette-mode owned --owned-ids 1,2,7,8,9,10,11
 ### Output
 
 The program outputs a JSON 2D array of integers (palette indices), shape `[height][width]`. The integer IDs correspond to those in `src/palette-constants.js` (or your custom `--palette` if provided).
+
+### Visual previews
+
+```bash
+# Dither and produce JSON + a preview image
+dihter samples/tro.jpg -a floyd -o out.json --preview preview.png
+
+# Dither and produce a side-by-side comparison PNG
+dihter samples/tro.jpg -a floyd --compare compare.png
+```
 

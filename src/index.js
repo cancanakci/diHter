@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 const { program } = require('commander');
-const { loadImageToRGBA, saveOutput } = require('./io');
+const { loadImageToRGBA, saveOutput, saveRGBAtoPNG, saveSideBySidePNG } = require('./io');
 const { buildPalette, DEFAULT_PALETTE_DEFS } = require('./palette');
 const { ALL_COLORS_BY_ID, MAIN_COLOR_IDS, PREMIUM_COLOR_IDS } = require('./palette-constants');
 const { ditherImage } = require('./pipeline');
@@ -21,16 +21,22 @@ program
   .option('--palette <json>', 'JSON array of RGB triplets/objects, overrides defaults')
   .option('--palette-mode <mode>', 'one of: main|premium|all|owned (default: main unless --palette is provided)')
   .option('--owned-ids <csv>', 'CSV list of integer color IDs to use (used when --palette-mode owned)')
+  .option('--preview <png>', 'Write a PNG of the dithered image')
+  .option('--compare <png>', 'Write a side-by-side PNG: original | dithered')
   .action(async (input, opts) => {
     try {
+      const startedAt = Date.now();
       const image = await loadImageToRGBA(input, {
         width: opts.width ? parseInt(opts.width, 10) : undefined,
         height: opts.height ? parseInt(opts.height, 10) : undefined,
       });
 
       let paletteDefs;
+      let modeUsed = 'main';
+      let idsUsed = [];
       if (opts.palette) {
         paletteDefs = JSON.parse(opts.palette);
+        modeUsed = 'custom';
       } else {
         const mode = String(opts.paletteMode || 'main').toLowerCase();
         let ids;
@@ -44,13 +50,15 @@ program
         } else {
           ids = MAIN_COLOR_IDS;
         }
+        modeUsed = mode;
         paletteDefs = ids.map((id) => ({ id, ...ALL_COLORS_BY_ID[id] })).filter((e) => !!e.r || e.r === 0);
         if (paletteDefs.length === 0) throw new Error('Selected palette is empty');
       }
       const palette = buildPalette(paletteDefs);
+      idsUsed = palette.entries.map((e) => e.id);
 
       const { width, height, data } = image;
-      const indices2D = ditherImage({
+      const result = ditherImage({
         width,
         height,
         rgba: data,
@@ -62,7 +70,42 @@ program
         orderedSize: opts.orderedSize,
       });
 
-      await saveOutput(indices2D, opts.output);
+      await saveOutput(result.indices2D, opts.output);
+      if (opts.preview) {
+        await saveRGBAtoPNG({ width, height, rgbaBuffer: result.quantizedRGBA, outPath: opts.preview });
+      }
+      if (opts.compare) {
+        await saveSideBySidePNG({ width, height, originalRGBA: data, quantizedRGBA: result.quantizedRGBA, outPath: opts.compare });
+      }
+
+      const elapsedMs = Date.now() - startedAt;
+      // Pretty, multi-line summary to stderr (stdout reserved for JSON indices)
+      const algoUsed = String(opts.algorithm || 'floyd').toLowerCase();
+      const serp = opts.serpentine !== false ? 'on' : 'off';
+      const gammaStr = opts.gamma == null ? '-' : String(opts.gamma);
+      const orderedStr = opts.orderedSize == null ? '-' : String(opts.orderedSize);
+      const outJSON = opts.output || 'stdout';
+      const previewPNG = opts.preview || '-';
+      const comparePNG = opts.compare || '-';
+      const lines = [
+        '',
+        '[dihter] Done',
+        '  • Input        : ' + input,
+        '  • Size         : ' + `${width}x${height}`,
+        '  • Algorithm    : ' + algoUsed,
+        '  • Gamma        : ' + gammaStr,
+        '  • Strength     : ' + opts.strength,
+        '  • Serpentine   : ' + serp,
+        '  • Ordered size : ' + orderedStr,
+        '  • Palette mode : ' + `${modeUsed} (${idsUsed.length} colors)`,
+        '  • Color IDs    : ' + (idsUsed.length ? idsUsed.join(', ') : '-'),
+        '  • Output JSON  : ' + outJSON,
+        '  • Preview PNG  : ' + previewPNG,
+        '  • Compare PNG  : ' + comparePNG,
+        '  • Elapsed      : ' + `${elapsedMs} ms`,
+        ''
+      ];
+      console.error(lines.join('\n'));
     } catch (err) {
       console.error('[dihter] Error:', err.message || err);
       process.exitCode = 1;
