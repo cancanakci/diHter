@@ -74,13 +74,13 @@ Original and dithered examples from `samples/`:
 
 - Original `tro.jpg`:
 
-  ![tro.jpg](samples/tro.jpg)
+  <img src="samples/tro.jpg" alt="tro.jpg" width="640" />
 
 - Base colors dither (main palette):
 
-  ![tro-output-basecolors.jpg](samples/tro-output-basecolors.jpg)
+  <img src="samples/tro-output-basecolors.jpg" alt="tro-output-basecolors.jpg" width="640" />
 
 - All colors dither (main + premium):
 
-  ![tro-output-allcolors.jpg](samples/tro-output-allcolors.jpg)
+  <img src="samples/tro-output-allcolors.jpg" alt="tro-output-allcolors.jpg" width="640" />
 
