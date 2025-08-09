@@ -74,13 +74,13 @@ Original and dithered examples from `samples/`:
 
 - Original `tro.jpg`:
 
-  <img src="samples/tro.jpg" alt="tro.jpg" width="640" />
+  <img src="samples/tro.jpg" alt="tro.jpg" width="75%" style="image-rendering: pixelated; image-rendering: crisp-edges; image-rendering: -moz-crisp-edges;" />
 
 - Base colors dither (main palette):
 
-  <img src="samples/tro-output-basecolors.jpg" alt="tro-output-basecolors.jpg" width="640" />
+  <img src="samples/tro-output-basecolors.jpg" alt="tro-output-basecolors.jpg" width="75%" style="image-rendering: pixelated; image-rendering: crisp-edges; image-rendering: -moz-crisp-edges;" />
 
 - All colors dither (main + premium):
 
-  <img src="samples/tro-output-allcolors.jpg" alt="tro-output-allcolors.jpg" width="640" />
+  <img src="samples/tro-output-allcolors.jpg" alt="tro-output-allcolors.jpg" width="75%" style="image-rendering: pixelated; image-rendering: crisp-edges; image-rendering: -moz-crisp-edges;" />
 
