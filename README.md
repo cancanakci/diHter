@@ -6,7 +6,7 @@ diHter is a CLI tool specifically built for planning out artworks on collaborati
 
 ```bash
 npm install
-npm link # optional to use `dihter` globally
+npm link # optional to use dither globally
 ```
 
 ### Usage
