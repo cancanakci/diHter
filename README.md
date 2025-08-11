@@ -1,6 +1,6 @@
 ## diHter — palette dithering CLI
 
-diHter is a CLI tool specifically built for planning out artworks on collaborative pixel art websites such as r/place. Loads an image, dithers with an algorithm of choice to a selectable palette and outputs a 2D array of palette indices. Preview and comparison functionality is included.
+diHter is a CLI tool specifically built for planning out artworks on collaborative pixel art websites such as wplace.live. Loads an image, dithers with an algorithm of choice to a selectable palette and outputs a 2D array of palette indices. Preview and comparison functionality is included.
 
 ### Install
 
