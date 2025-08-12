@@ -2,6 +2,7 @@
 const { program } = require('commander');
 const { loadImageToRGBA, saveOutput, saveRGBAtoPNG, saveSideBySidePNG } = require('./io');
 const { buildPalette, DEFAULT_PALETTE_DEFS } = require('./palette');
+const { getPresetPaletteDefs } = require('./palette-presets');
 const { ALL_COLORS_BY_ID, MAIN_COLOR_IDS, PREMIUM_COLOR_IDS } = require('./palette-constants');
 const { ditherImage } = require('./pipeline');
 
@@ -19,6 +20,8 @@ program
   .option('--no-serpentine', 'Disable serpentine scanning')
   .option('--ordered-size <n>', 'Ordered dithering Bayer matrix size: 2|3|4|8', (v) => parseInt(v, 10), 4)
   .option('--palette <json>', 'JSON array of RGB triplets/objects, overrides defaults')
+  .option('--palette-preset <name>', 'Preset palette: greyscale|redscale|greenscale|bluescale')
+  .option('--preset-levels <n>', 'Preset palette levels (2-256)', (v) => parseInt(v, 10))
   .option('--palette-mode <mode>', 'one of: main|premium|all|owned (default: main unless --palette is provided)')
   .option('--owned-ids <csv>', 'CSV list of integer color IDs to use (used when --palette-mode owned)')
   .option('--preview <png>', 'Write a PNG of the dithered image')
@@ -37,6 +40,11 @@ program
       if (opts.palette) {
         paletteDefs = JSON.parse(opts.palette);
         modeUsed = 'custom';
+      } else if (opts.palettePreset) {
+        const presetName = String(opts.palettePreset).toLowerCase();
+        const levels = opts.presetLevels == null ? undefined : parseInt(opts.presetLevels, 10);
+        paletteDefs = getPresetPaletteDefs(presetName, { levels });
+        modeUsed = `preset-${presetName}`;
       } else {
         const mode = String(opts.paletteMode || 'main').toLowerCase();
         let ids;

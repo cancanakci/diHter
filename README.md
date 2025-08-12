@@ -27,6 +27,8 @@ dihter <input> [options]
 - `--serpentine/--no-serpentine` toggle serpentine scan
 - `--ordered-size <n>` Bayer matrix size 2|3|4|8
 - `--palette <json>` palette array; each entry `[r,g,b]` or `{r,g,b}`; `id` defaults to index
+- `--palette-preset <name>` quick presets: `greyscale|redscale|greenscale|bluescale`
+- `--preset-levels <n>` number of levels for presets (2-256, default: 8)
 - `--palette-mode <mode>` `main|premium|all|owned` (default: `main` unless `--palette` given)
 - `--owned-ids <csv>` when `--palette-mode owned`, comma-separated list of integer color IDs to include
  - `--preview <png>` write a PNG of the dithered image
@@ -43,6 +45,12 @@ dihter input.png -a floyd --palette '[{"r":0,"g":0,"b":0}, {"r":255,"g":255,"b":
 
 # Use default main colors (no flag needed)
 dihter input.png -a floyd
+
+# Use a greyscale preset with 16 levels
+dihter input.png --palette-preset greyscale --preset-levels 16
+
+# Use a redscale preset (defaults to 8 levels)
+dihter input.png --palette-preset redscale
 
 # Use only premium colors
 dihter input.png --palette-mode premium
