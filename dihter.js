@@ -222,21 +222,8 @@ const ALL_COLORS_BY_ID = {
   60: { r: 179, g: 185, b: 209, name: 'Light Slate' },
 };
 
-const MAIN_COLOR_IDS = [
-  1, 2, 3, 32, 4, 5,
-  6, 7, 8, 9, 10, 11,
-  12, 13, 14, 15, 16, 17,
-  18, 19, 20,
-  21, 22,
-  23, 24,
-  26, 27,
-];
-
-const PREMIUM_COLOR_IDS = Object.keys(ALL_COLORS_BY_ID)
-  .map((k) => parseInt(k, 10))
-  .filter((id) => id !== 0 && !MAIN_COLOR_IDS.includes(id));
-
-const DEFAULT_PALETTE_DEFS = MAIN_COLOR_IDS.map((id) => ({ id, ...ALL_COLORS_BY_ID[id] }));
+const PREMIUM_COLOR_IDS = Object.keys(ALL_COLORS_BY_ID).filter((id) => id >= 32).reduce((o, key) => Object.assign(o, { [key]: ALL_COLORS_BY_ID[key] }), {});
+const DEFAULT_PALETTE_DEFS = Object.keys(ALL_COLORS_BY_ID).filter((id) => id < 32).reduce((o, key) => Object.assign(o, { [key]: ALL_COLORS_BY_ID[key] }), {});
 
 function preprocessGamma(rgbLinear01, gamma) {
   if (!gamma || gamma === 1) return rgbLinear01;
