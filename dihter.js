@@ -352,7 +352,7 @@ function ditherImageFromUrl(imageUrl, width, height, options) {
       const ditheredImageData = new ImageData(ditheredResult.quantizedRGBA, width, height);
       ctx.putImageData(ditheredImageData, 0, 0);
 
-      resolve(canvas.toDataURL());
+      resolve({ dataUrl: canvas.toDataURL(), indicesArray });
     };
     img.onerror = reject;
     img.src = imageUrl;
