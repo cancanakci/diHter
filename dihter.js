@@ -1,6 +1,6 @@
 // Vanilla js port of diHter library
 function to01(v) { return v / 255; }
-function from01(v) { return Math.max(0, Math.min(255, Math.floor(v * 255))); }
+function from01(v) { return Math.max(0, Math.min(255, Math.round(v * 255))); }
 
 function getPixel01(rgba, width, x, y) {
   const i = (y * width + x) * 4;
@@ -352,7 +352,7 @@ function ditherImageFromUrl(imageUrl, width, height, options) {
       const ditheredImageData = new ImageData(ditheredResult.quantizedRGBA, width, height);
       ctx.putImageData(ditheredImageData, 0, 0);
 
-      resolve({ dataUrl: canvas.toDataURL(), indicesArray });
+      resolve({ dataUrl: canvas.toDataURL(), indicesArray: ditheredResult.indices2D });
     };
     img.onerror = reject;
     img.src = imageUrl;
