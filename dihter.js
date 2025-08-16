@@ -1,6 +1,6 @@
 // Vanilla js port of diHter library
 function to01(v) { return v / 255; }
-function from01(v) { return Math.max(0, Math.min(255, Math.round(v * 255))); }
+function from01(v) { return Math.max(0, Math.min(255, Math.floor(v * 255))); }
 
 function getPixel01(rgba, width, x, y) {
   const i = (y * width + x) * 4;
@@ -270,9 +270,9 @@ function ditherImage({ width, height, rgba, palette, algorithm, gamma, strength,
       const g = working[i + 1] / 255;
       const b = working[i + 2] / 255;
       const [rr, gg, bb] = preprocessGamma([r, g, b], gamma);
-      working[i] = Math.max(0, Math.min(255, Math.round(rr * 255)));
-      working[i + 1] = Math.max(0, Math.min(255, Math.round(gg * 255)));
-      working[i + 2] = Math.max(0, Math.min(255, Math.round(bb * 255)));
+      working[i] = from01(rr);
+      working[i + 1] = from01(gg);
+      working[i + 2] = from01(bb);
     }
   }
 
