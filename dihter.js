@@ -4,14 +4,15 @@ function from01(v) { return Math.max(0, Math.min(255, Math.round(v * 255))); }
 
 function getPixel01(rgba, width, x, y) {
   const i = (y * width + x) * 4;
-  return [to01(rgba[i]), to01(rgba[i + 1]), to01(rgba[i + 2]), rgba[i + 3] / 255];
+  return [to01(rgba[i]), to01(rgba[i + 1]), to01(rgba[i + 2]), to01(rgba[i + 3])];
 }
 
-function setPixel01(rgba, width, x, y, r, g, b) {
+function setPixel01(rgba, width, x, y, r, g, b, a) {
   const i = (y * width + x) * 4;
   rgba[i] = from01(r);
   rgba[i + 1] = from01(g);
   rgba[i + 2] = from01(b);
+  rgba[i + 3] = from01(a);
 }
 
 function clamp01(x) { return Math.max(0, Math.min(1, x)); }
@@ -20,11 +21,11 @@ function nearestOnly(rgba, width, height, palette, opts) {
   const out = Array.from({ length: height }, () => new Array(width));
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
-      const [r, g, b] = getPixel01(rgba, width, x, y);
-      const idx = findNearestPaletteIndex(r, g, b, palette.float);
+      const [r, g, b, a] = getPixel01(rgba, width, x, y);
+      const idx = findNearestPaletteIndex(r, g, b, a, palette.float);
       out[y][x] = palette.entries[idx].id;
       const p = palette.float[idx];
-      setPixel01(rgba, width, x, y, p.r, p.g, p.b);
+      setPixel01(rgba, width, x, y, p.r, p.g, p.b, p.a);
     }
   }
   return out;
@@ -39,14 +40,14 @@ function diffuse(rgba, width, height, palette, opts, kernel, divisor, serpentine
     const xEnd = leftToRight ? width : -1;
     const xStep = leftToRight ? 1 : -1;
     for (let x = xStart; x !== xEnd; x += xStep) {
-      const [r, g, b] = getPixel01(rgba, width, x, y);
-      const idx = findNearestPaletteIndex(r, g, b, palette.float);
+      const [r, g, b, a] = getPixel01(rgba, width, x, y);
+      const idx = findNearestPaletteIndex(r, g, b, a, palette.float);
       out[y][x] = palette.entries[idx].id;
       const p = palette.float[idx];
       const er = r - p.r;
       const eg = g - p.g;
       const eb = b - p.b;
-      setPixel01(rgba, width, x, y, p.r, p.g, p.b);
+      setPixel01(rgba, width, x, y, p.r, p.g, p.b, p.a);
       for (const k of kernel) {
         const nx = x + (leftToRight ? k.dx : -k.dx);
         const ny = y + k.dy;
@@ -141,15 +142,15 @@ function orderedDither(rgba, w, h, palette, opts) {
   const out = Array.from({ length: h }, () => new Array(w));
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
-      const [r, g, b] = getPixel01(rgba, w, x, y);
+      const [r, g, b, a] = getPixel01(rgba, w, x, y);
       const t = (M[y % n][x % n] + 0.5) / denom - 0.5; // [-0.5, 0.5)
       const rr = clamp01(r + t / 255);
       const gg = clamp01(g + t / 255);
       const bb = clamp01(b + t / 255);
-      const idx = findNearestPaletteIndex(rr, gg, bb, palette.float);
+      const idx = findNearestPaletteIndex(rr, gg, bb, a, palette.float);
       out[y][x] = palette.entries[idx].id;
       const p = palette.float[idx];
-      setPixel01(rgba, w, x, y, p.r, p.g, p.b);
+      setPixel01(rgba, w, x, y, p.r, p.g, p.b, p.a);
     }
   }
   return out;
@@ -250,13 +251,15 @@ function buildPalette(defs) {
     if ([r, g, b].some((v) => v == null)) {
       throw new Error(`Palette entry ${i} is invalid; expected {r,g,b}`);
     }
-    return { id: d.id ?? i, r: r|0, g: g|0, b: b|0 };
+    let a = d.id === 0 ? 0 : 255;
+    return { id: d.id ?? i, r: r|0, g: g|0, b: b|0, a };
   });
   const float = entries.map((e) => ({
     id: e.id,
     r: e.r / 255,
     g: e.g / 255,
     b: e.b / 255,
+    a: e.a / 255
   }));
   return { entries, float };
 }
@@ -311,7 +314,14 @@ function colorDistanceSq(a, b) {
   return dr * dr + dg * dg + db * db;
 }
 
-function findNearestPaletteIndex(r, g, b, paletteFloat) {
+function findNearestPaletteIndex(r, g, b, a, paletteFloat) {
+  if (r === 0 && g === 0 && b === 0) {
+    if (a === 0) {
+      return 0; // Transparent
+    }
+    return 1; // Black
+  }
+
   let bestIdx = 0;
   let bestDist = Infinity;
   for (let i = 0; i < paletteFloat.length; i += 1) {
