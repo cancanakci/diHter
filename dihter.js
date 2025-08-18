@@ -157,20 +157,20 @@ function orderedDither(rgba, w, h, palette, opts) {
 }
 
 const ALL_COLORS_BY_ID = {
-  0:  { r: 0, g: 0, b: 0, name: 'Transparent' },
-  1:  { r: 0, g: 0, b: 0, name: 'Black' },
-  2:  { r: 60, g: 60, b: 60, name: 'Dark Gray' },
-  3:  { r: 120, g: 120, b: 120, name: 'Gray' },
+  0: { r: 0, g: 0, b: 0, name: 'Transparent' },
+  1: { r: 0, g: 0, b: 0, name: 'Black' },
+  2: { r: 60, g: 60, b: 60, name: 'Dark Gray' },
+  3: { r: 120, g: 120, b: 120, name: 'Gray' },
   32: { r: 170, g: 170, b: 170, name: 'Medium Gray' },
-  4:  { r: 210, g: 210, b: 210, name: 'Light Gray' },
-  5:  { r: 255, g: 255, b: 255, name: 'White' },
-  6:  { r: 96, g: 0, b: 24, name: 'Deep Red' },
+  4: { r: 210, g: 210, b: 210, name: 'Light Gray' },
+  5: { r: 255, g: 255, b: 255, name: 'White' },
+  6: { r: 96, g: 0, b: 24, name: 'Deep Red' },
   33: { r: 165, g: 14, b: 30, name: 'Dark Red' },
-  7:  { r: 237, g: 28, b: 36, name: 'Red' },
+  7: { r: 237, g: 28, b: 36, name: 'Red' },
   34: { r: 250, g: 128, b: 114, name: 'Light Red' },
   35: { r: 228, g: 92, b: 26, name: 'Dark Orange' },
-  8:  { r: 255, g: 127, b: 39, name: 'Orange' },
-  9:  { r: 246, g: 170, b: 9, name: 'Gold' },
+  8: { r: 255, g: 127, b: 39, name: 'Orange' },
+  9: { r: 246, g: 170, b: 9, name: 'Gold' },
   10: { r: 249, g: 221, b: 59, name: 'Yellow' },
   11: { r: 255, g: 250, b: 188, name: 'Light Yellow' },
   37: { r: 156, g: 132, b: 49, name: 'Dark Goldenrod' },
@@ -244,16 +244,19 @@ function buildPalette(defs) {
   if (!Array.isArray(defs) || defs.length === 0) {
     throw new Error('Palette must be a non-empty array of RGB entries');
   }
-  const entries = defs.map((d, i) => {
+  const entries = defs.reduce((acc, d, i) => {
     const r = d.r ?? (Array.isArray(d) ? d[0] : undefined);
     const g = d.g ?? (Array.isArray(d) ? d[1] : undefined);
     const b = d.b ?? (Array.isArray(d) ? d[2] : undefined);
+
     if ([r, g, b].some((v) => v == null)) {
       throw new Error(`Palette entry ${i} is invalid; expected {r,g,b}`);
     }
-    let a = d.id === 0 ? 0 : 255;
-    return { id: d.id ?? i, r: r|0, g: g|0, b: b|0, a };
-  });
+
+    acc.push({ id: d.id ?? i, r: r | 0, g: g | 0, b: b | 0, a: d.id === 0 ? 0 : 255 });
+    return acc;
+  }, []);
+
   const float = entries.map((e) => ({
     id: e.id,
     r: e.r / 255,
@@ -315,17 +318,18 @@ function colorDistanceSq(a, b) {
 }
 
 function findNearestPaletteIndex(r, g, b, a, paletteFloat) {
-  if (r === 0 && g === 0 && b === 0) {
-    if (a === 0) {
-      return 0; // Transparent
-    }
-    return 1; // Black
+  if (a !== 1) {
+    return 0; // Transparent
   }
 
   let bestIdx = 0;
   let bestDist = Infinity;
   for (let i = 0; i < paletteFloat.length; i += 1) {
     const p = paletteFloat[i];
+    if (p.a !== 1) {
+      // Skip transparent palette
+      continue;
+    }
     const d = colorDistanceSq({ r, g, b }, p);
     if (d < bestDist) {
       bestDist = d;
